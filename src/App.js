@@ -1,18 +1,33 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
+import { socket } from './socketClient';
 import './App.css';
 
 class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      messages: []
+    }
+  }
+  componentDidMount() {
+    socket.on('SERVER_SEND_MESSAGE', message => {
+      this.setState(prevState => ({ messages: prevState.messages.concat(message) }));
+    });
+  }
+  onSendMessage() {
+    const message = this.refs.txtMessage.value;
+    this.refs.txtMessage.value = '';
+    socket.emit('CLIENT_SEND_MESSAGE', message);
+  }
   render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
+      <div style={{ padding: '10px' }}>
+        <input placeholder="Message" ref="txtMessage" />
+        <br /><br />
+        <button onClick={this.onSendMessage.bind(this)}>
+          Send
+        </button>
+        { this.state.messages.map((e, index) => <p key={index}>{e}</p>) }
       </div>
     );
   }
