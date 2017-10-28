@@ -15,7 +15,19 @@ class App extends Component {
     socket.on('SERVER_SEND_MESSAGE', message => {
       this.setState(prevState => ({ messages: prevState.messages.concat(message) }));
     });
+
+    socket.on('CONFIRM_USERNAME', isSuccessful => {
+      if (!isSuccessful) return alert('Choose another username');
+      this.setState({ isLoggedIn: true });
+      alert('Sign in successfully');
+    });
   }
+
+  onSignIn() {
+    const username = this.refs.txtUsername.value;
+    socket.emit('CLIENT_SIGN_IN', username);
+  }
+
   onSendMessage() {
     const message = this.refs.txtMessage.value;
     this.refs.txtMessage.value = '';
@@ -42,9 +54,9 @@ class App extends Component {
     );
     return (
       <div style={{ padding: '10px' }}>
-        <input placeholder="Username" ref="txUsername" />
+        <input placeholder="Username" ref="txtUsername" />
         <br /><br />
-        <button onClick={this.onSendMessage.bind(this)}>
+        <button onClick={this.onSignIn.bind(this)}>
           Sign In
         </button>
       </div>
