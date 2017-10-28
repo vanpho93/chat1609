@@ -98,3 +98,8 @@ class App extends Component {
 }
 
 export default App;
+
+// mail: khoaphamtraining@gmail.com
+// Chu de
+// Code up len git
+// Quay video demo
