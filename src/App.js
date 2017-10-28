@@ -49,7 +49,10 @@ class App extends Component {
   }
 
   onSendPrivateMessage() {
-    
+    const message = this.refs.txtMessage.value;
+    const { activeUser } = this.state;
+    this.refs.txtMessage.value = '';
+    socket.emit('CLIENT_SEND_PRIVATE_MESSAGE', { message, activeUser});
   }
 
   render() {
