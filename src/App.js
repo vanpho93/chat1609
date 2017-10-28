@@ -8,10 +8,24 @@ class App extends Component {
     this.state = {
       messages: [],
       users: [],
-      isLoggedIn: false
+      isLoggedIn: false,
+      activeUser: null
     }
   }
   componentDidMount() {
+    socket.on('LIST_USER', usernames => this.setState({ users: usernames }))
+    socket.on('NEW_USER', username => {
+      this.setState(prevState => ({
+        users: prevState.users.concat(username)
+      }));
+    });
+
+    socket.on('USER_DISCONNECT', username => {
+      this.setState(prevState => ({
+        users: prevState.users.filter(user => user !== username)
+      }));
+    });
+
     socket.on('SERVER_SEND_MESSAGE', message => {
       this.setState(prevState => ({ messages: prevState.messages.concat(message) }));
     });
@@ -33,8 +47,13 @@ class App extends Component {
     this.refs.txtMessage.value = '';
     socket.emit('CLIENT_SEND_MESSAGE', message);
   }
+
+  onSendPrivateMessage() {
+    
+  }
+
   render() {
-    const { users, isLoggedIn, messages } = this.state;
+    const { users, isLoggedIn, messages, activeUser } = this.state;
     if (isLoggedIn) return (
       <div style={{ padding: '10px', display: 'flex', flexDirection: 'row' }}>
         <div>
@@ -43,12 +62,23 @@ class App extends Component {
           <button onClick={this.onSendMessage.bind(this)}>
             Send
           </button>
+          <button onClick={this.onSendPrivateMessage.bind(this)}>
+            Send private
+          </button>
           <h4>Messages</h4>
           { messages.map((e, index) => <p key={index}>{e}</p>) }
         </div>
         <div style={{ padding: '10px', marginTop: 50 }}>
             <h4>User Online</h4>
-            { users.map((e, index) => <p key={index}>{e}</p>) }
+            { users.map((e, index) => (
+              <p 
+                key={index}
+                style={{ color: (activeUser === e) ? 'red': 'black' }}
+                onClick={() => this.setState({ activeUser: e })}
+              >
+                {e}
+              </p>)
+            )}
         </div>
       </div>
     );

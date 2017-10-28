@@ -1,8 +1,13 @@
 const io = require('socket.io')(4200);
 
 const arrUsername = [];
+const arrUser = [];
 
 io.on('connection', socket => {
+    let socketUsername;
+
+    socket.emit('LIST_USER', arrUsername);
+
     socket.on('CLIENT_SEND_MESSAGE', message => {
         io.emit('SERVER_SEND_MESSAGE', 'You: ' + message);
     });
@@ -10,12 +15,20 @@ io.on('connection', socket => {
     socket.on('CLIENT_SIGN_IN', username => {
         const isExisted = arrUsername.indexOf(username) !== -1;
         if (isExisted) return socket.emit('CONFIRM_USERNAME', false);
+        socketUsername = username;
+        io.emit('NEW_USER', username);
         arrUsername.push(username);
         socket.emit('CONFIRM_USERNAME', true);
     });
+
+    socket.on('disconnect', () => {
+        if (!socketUsername) return;
+        io.emit('USER_DISCONNECT', socketUsername);
+        const index = arrUsername.indexOf(socketUsername);
+        arrUsername.splice(index, 1);
+    });
 });
 
-// 1. Client gui username
-// 2. Kiem tra ton tai // indexOf
-// 3. Neu chua ton tai, emit cho client doi state isLoggedIn, push vao arrUsername
-// 4. Neu da ton tai, emit cho client bao loi, alert ra loi
+// 1. Gui mang arrUsername khi vua ket noi
+// 2. Moi khi ai dang ky thanh cong, emit ve cho tat ca user
+// 3. Khi ma ai do disconnect, xoa khoi mang
